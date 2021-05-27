@@ -57,13 +57,12 @@ loginControllerPublicHost: 'https://www.baidu.com'
 schoolPublicUrl: 'https://learn.corporate.ef.com/'
 imageVersions:
   loginController: 1.0.38
-services: {
-  account: 'https://learn.corporate.ef.com/account',
-  accessControl: 'https://learn.corporate.ef.com/accessControl',
-  operatorsManagement: 'https://learn.corporate.ef.com/operatorManagement',
-  enrollmentsManagement: 'https://learn.corporate.ef.com/enrollmentMangement',
+services:
+  account: 'https://learn.corporate.ef.com/account'
+  accessControl: 'https://learn.corporate.ef.com/accessControl'
+  operatorsManagement: 'https://learn.corporate.ef.com/operatorManagement'
+  enrollmentsManagement: 'https://learn.corporate.ef.com/enrollmentMangement'
   businessDataIntegration: 'https://learn.corporate.ef.com/businessDataIntegration'
-}
 
 replicaCount: 1
 
