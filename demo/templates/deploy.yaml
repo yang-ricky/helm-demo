@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    component: login-controller
+    provider: b2b
+  name: login-controller
+spec:
+  selector:
+    matchLabels:
+      component: login-controller
+  template:
+    metadata:
+      labels:
+        component: login-controller
+        provider: b2b
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/cm.yaml") . | sha256sum }}
+    spec:
+      {{- include "affinity" . | nindent 6 }}
+      containers:
+      - name: login-controller
+        image: "docker.pkg.github.com/efcloud/el-login-controller/el-login-controller:{{ required "imageVersions.loginController" .Values.imageVersions.loginController }}"
+        env:
+          - name: PORT
+            value: "8080"
+          - name: LOG_LEVEL
+            value: {{ .Values.logLevel | default "info" }}
+          - name: BU
+            value: b2b
+          - name: BU_PRIVATE_KEY_PATH
+            value: /opt/keys/private/bu/b2b/b2b.pem
+          - name: ALLOW_MOCKED_SERVICES
+            value: "false"
+          - name: ACCOUNT_SERVICE
+            value: http://{{ required "services.account is required" .Values.services.account }}
+          - name: SCHOOL_ACCESS_CONTROL_SERVICE
+            value: http://{{ required "services.accessControl is required" .Values.services.accessControl }}
+          - name: OPERATORS_MANAGEMENT_SERVICE
+            value: http://{{ required "services.operatorsManagement is required" .Values.services.operatorsManagement }}/v1
+          - name: ENROLLMENTS_MANAGEMENT_SERVICE
+            value: http://{{ required "services.enrollmentsManagement is required" .Values.services.enrollmentsManagement }}/v1
+          - name: BUSINESS_DATA_SERVICE
+            value: http://{{ required "services.businessDataIntegration is required" .Values.services.businessDataIntegration }}
+          - name: CSRF_COOKIE_NAME
+            value: el-b2b-lc_csrf_{{ randAlphaNum 5 | nospace }}
+          - name: PROVIDERS_CONFIG
+            valueFrom:
+              configMapKeyRef:
+                name: login-controller
+                key: PROVIDERS_CONFIG
+          - name: INITIATORS_CONFIG
+            valueFrom:
+              configMapKeyRef:
+                name: login-controller
+                key: INITIATORS_CONFIG
+          - name: CSRF_COOKIE_SIGN_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: login-controller-csrf-key
+                key: csrf.key
+          {{- range .Values.supportedIDPs }}
+          - name: {{ .code }}_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: {{ .clientIdSecretName }}
+                key: {{ .clientIdSecretName }}
+          - name: {{ .code }}_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: {{ .clientSecretSecretName }}
+                key: {{ .clientSecretSecretName }}
+          {{- end }}
+        volumeMounts:
+        - name: bu-b2b-private
+          readOnly: false
+          mountPath: /opt/keys/private/bu/b2b/
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /v1/health
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /v1/health
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 10
+        resources:
+          limits:
+            memory: "500Mi"
+            cpu: "400m"
+          requests:
+            memory: "250Mi"
+            cpu: "200m"
+      volumes:
+      - name: bu-b2b-private
+        secret:
+          secretName: bu-b2b-private
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}

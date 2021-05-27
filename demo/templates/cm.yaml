@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: login-controller
+data:
+  PROVIDERS_CONFIG: |-
+    {
+      {{- range $i, $spec := .Values.supportedIDPs }}
+      {{- if $i }},{{ end -}}
+      "{{ $spec.code }}": {
+        "class": "OpenIdConnectProvider",
+        "clientIdEnvVar": "{{ $spec.code }}_CLIENT_ID",
+        "clientSecretEnvVar": "{{ $spec.code }}_CLIENT_SECRET",
+        "redirectUri": "https://{{ required "loginControllerPublicHost is required" $.Values.loginControllerPublicHost }}/v1/login/oauth2/callback/{{ $spec.code }}",
+        "authorizeEndpoint": "{{ $spec.authorizeEndpoint }}",
+        "tokenRequestEndpoint": "{{ $spec.tokenRequestEndpoint }}",
+        "logoutRequestEndpoint": "{{ $spec.logoutRequestEndpoint }}"
+      }
+      {{- end }}
+    }
+  INITIATORS_CONFIG: |-
+    {
+      {{- if .Values.allowLocalhostLogin }}
+      "SCHOOL_WEB_LOCAL": {
+        "class": "WebInitiator",
+        "redirectUri": "http://localhost:8080/",
+        "postLogoutRedirectUri": "http://localhost:8080/",
+        "allowStudents": true,
+        "allowOperators": false,
+        "accessGroup": "web",
+        "allowMultipleAccess": true,
+        "accessDays": 30,
+        "platform": "web"
+      },
+      {{- end }}
+      "SCHOOL_WEB": {
+        "class": "WebInitiator",
+        "redirectUri": "{{ required "schoolPublicUrl is required" .Values.schoolPublicUrl }}",
+        "postLogoutRedirectUri": "{{ required "schoolPublicUrl is required" .Values.schoolPublicUrl }}",
+        "allowStudents": true,
+        "allowOperators": false,
+        "accessGroup": "web",
+        "allowMultipleAccess": true,
+        "accessDays": 30,
+        "platform": "web"
+      },
+      "SCHOOL_IOS": {
+        "class": "WebInitiator",
+        "redirectUri": "com.engage-corporate-client.ios:/engage-corporate-study/",
+        "postLogoutRedirectUri": "com.engage-corporate-client.ios:/engage-corporate-study/loggedout",
+        "allowStudents": true,
+        "allowOperators": false,
+        "accessGroup": "mobile",
+        "allowMultipleAccess": false,
+        "accessDays": 30,
+        "platform": "mobile"
+      },
+      "SCHOOL_ANDROID": {
+        "class": "WebInitiator",
+        "redirectUri": "com.engage-corporate-client.android:/engage-corporate-study/",
+        "postLogoutRedirectUri": "com.engage-corporate-client.android:/engage-corporate-study/",
+        "allowStudents": true,
+        "allowOperators": false,
+        "accessGroup": "mobile",
+        "allowMultipleAccess": false,
+        "accessDays": 30,
+        "platform": "mobile"
+      }
+    }

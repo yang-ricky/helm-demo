@@ -5,6 +5,66 @@ config:
   isDev: false
   name: 'ricky-chart'
 
+sizeMap:
+  small:
+    access-control:
+      min: 1
+      max: 1
+    business-data-integration:
+      min: 1
+      max: 1
+    cluster-paths-router:
+      min: 1
+      max: 1
+    school-api-gateway:
+      min: 1
+      max: 1
+    crc-api-gateway:
+      min: 1
+      max: 1
+    login-controller:
+      min: 1
+      max: 1
+    old-house-mobile-login:
+      min: 1
+      max: 1
+
+size: small
+supportedIDPs: [{
+  code: "DEV_AUTH",
+  clientIdSecretName: "keycloak-client-id",
+  clientSecretSecretName: "keycloak-client-secret",
+  authorizeEndpoint: "https://dev-learn.corporate.ef.com/dev-auth/auth/realms/development/protocol/openid-connect/auth",
+  tokenRequestEndpoint: "https://dev-learn.corporate.ef.com/dev-auth/auth/realms/development/protocol/openid-connect/token",
+  logoutRequestEndpoint: "https://dev-learn.corporate.ef.com/dev-auth/auth/realms/development/protocol/openid-connect/logout",
+  businessDataApi: "http://keycloak-bs-api.infrastructure.svc.cluster.local",
+  houseDispatcherApi: "http://keycloak-bs-api.infrastructure.svc.cluster.local",
+  houseDispatcherApiKeySecretName: "keycloak-house-dispatcher-api-key"
+},
+{
+  code: "QA_AUTH",
+  clientIdSecretName: "keycloak-client-id",
+  clientSecretSecretName: "keycloak-client-secret",
+  authorizeEndpoint: "https://dev-learn.corporate.ef.com/dev-auth/auth/realms/development/protocol/openid-connect/auth",
+  tokenRequestEndpoint: "https://dev-learn.corporate.ef.com/dev-auth/auth/realms/development/protocol/openid-connect/token",
+  logoutRequestEndpoint: "https://dev-learn.corporate.ef.com/dev-auth/auth/realms/development/protocol/openid-connect/logout",
+  businessDataApi: "http://keycloak-bs-api.infrastructure.svc.cluster.local",
+  houseDispatcherApi: "http://keycloak-bs-api.infrastructure.svc.cluster.local",
+  houseDispatcherApiKeySecretName: "keycloak-house-dispatcher-api-key"
+}]
+
+loginControllerPublicHost: 'https://www.baidu.com'
+schoolPublicUrl: 'https://learn.corporate.ef.com/'
+imageVersions:
+  loginController: 1.0.38
+services: {
+  account: 'https://learn.corporate.ef.com/account',
+  accessControl: 'https://learn.corporate.ef.com/accessControl',
+  operatorsManagement: 'https://learn.corporate.ef.com/operatorManagement',
+  enrollmentsManagement: 'https://learn.corporate.ef.com/enrollmentMangement',
+  businessDataIntegration: 'https://learn.corporate.ef.com/businessDataIntegration'
+}
+
 replicaCount: 1
 
 image:
